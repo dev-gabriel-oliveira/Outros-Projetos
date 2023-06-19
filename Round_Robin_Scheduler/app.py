@@ -1,4 +1,4 @@
-import json, time, os
+import json, time, os, math
 from prettytable import PrettyTable
 
 global table
@@ -7,12 +7,14 @@ table = PrettyTable([' '])
 global tasks 
 tasks = []
 
-def render_table():
+def render_table(avg_turnaround_time, avg_wait_time):
     #Cria o Arquivo
-    file = open("Escalonamento Round-Robin","w")
+    file = open("Escalonamento Round-Robin.txt","w")
 
     #Escreve no Arquivo
     file.write(table.get_string())
+    file.write('\nTempo medio de vida (turnaround): {}'.format(avg_turnaround_time))
+    file.write('\nTempo medio de espera: {}'.format(avg_wait_time))
     file.close()
 
     print('A tabela do Escalonamento foi salva em seu diretório atual!')
@@ -46,7 +48,7 @@ def round_robin():
             while count_for <= 15:
                 new_column = ["O" if id == current_task['id'] else " " if task['ingress'] > count_time else "-" if task['duration'] > 0 else " " for id, task in enumerate(tasks)]
                 table.add_column(str(count_time), new_column)
-
+                
                 # Atualiza o tempo de vida das tarefas
                 for task in tasks_ordered:
                     if task['ingress'] <= count_time and task['duration'] > 0:
@@ -62,14 +64,15 @@ def round_robin():
                     # Verifica se ainda há tarefas a executar
                     if len(tasks_ordered) > 1:
                         for _ in range(4):
+                            # Troca de Contexto por 4 unidades de tempo
+                            count_time += 1
+
                             # Atualiza o tempo de vida e de espera das tarefas
                             for task in tasks_ordered:
                                 if task['ingress'] <= count_time and task['duration'] > 0:
                                     total_wait_time += 1
                                     total_turnaround_time += 1
-
-                            # Troca de Contexto por 4 unidades de tempo
-                            count_time += 1
+                            
                             new_column = ["-" if task['ingress'] <= count_time and task['duration'] > 0 else " " for task in tasks]
                             table.add_column(str(count_time), new_column)
                     break
@@ -97,13 +100,13 @@ def round_robin():
 
     # Calcula os tempos médios de espera e de vida (turnaround)
     num_tasks = len(tasks)
-    avg_wait_time = total_wait_time / num_tasks
-    avg_turnaround_time = total_turnaround_time / num_tasks
-
-    print('Tempo médio de espera:', avg_wait_time)
+    avg_wait_time = math.trunc(total_wait_time / num_tasks)
+    avg_turnaround_time = math.trunc(total_turnaround_time / num_tasks)
+    
     print('Tempo médio de vida (turnaround):', avg_turnaround_time)
+    print('Tempo médio de espera:', avg_wait_time)
 
-    render_table()
+    render_table(avg_turnaround_time, avg_wait_time)
 
 
 def main():
