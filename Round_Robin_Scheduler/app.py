@@ -1,4 +1,4 @@
-import json, time, os, math
+import json, time, os
 from prettytable import PrettyTable
 
 global table
@@ -22,7 +22,7 @@ def render_table(avg_turnaround_time, avg_wait_time):
     input('Pressione ENTER para voltar ao menu...')
 
 def round_robin():
-    count_time = 1
+    count_time = 0 # Tempo decorrido
 
     total_wait_time = 0  # Tempo total de espera de todas as tarefas
     total_turnaround_time = 0  # Tempo total de vida (turnaround) de todas as tarefas
@@ -34,14 +34,6 @@ def round_robin():
         # Obtém a próxima tarefa
         current_task = tasks_ordered[0]
 
-        # Verifica se há tarefas com prioridade maior do que a tarefa atual
-        max_priority = current_task['priority']
-        for task in tasks_ordered:
-            if task['ingress'] <= count_time:
-                if task['priority'] > max_priority:
-                    current_task = task
-                    max_priority = task['priority']
-
         if current_task['ingress'] <= count_time and current_task['duration'] >= 0:
             # Executa a tarefa pelo quantum de 15 unidades de tempo ou até sua duração acabar
             count_for = 1
@@ -49,29 +41,20 @@ def round_robin():
                 new_column = ["O" if id == current_task['id'] else " " if task['ingress'] > count_time else "-" if task['duration'] > 0 else " " for id, task in enumerate(tasks)]
                 table.add_column(str(count_time), new_column)
                 
-                # Atualiza o tempo de vida das tarefas
-                for task in tasks_ordered:
-                    if task['ingress'] <= count_time and task['duration'] > 0:
-                        total_turnaround_time += 1
-                # Atualiza o tempo de espera das tarefas
-                for task in tasks_ordered:
-                    if task['ingress'] <= count_time and task['duration'] > 0 and task != current_task:
-                        total_wait_time += 1
-                
+                current_task['exe_time'] += 1
                 current_task['duration'] -= 1
 
                 if current_task['duration'] == 0 or count_for == 15:
+                    # Verifica se a tarefa já acabou ou não
+                    if current_task['duration'] == 0:
+                        # Marca o tempo de finalização da tarefa
+                        current_task['death_time'] = count_time + 1
                     # Verifica se ainda há tarefas a executar
                     if len(tasks_ordered) > 1:
                         for _ in range(4):
+                            print('TROCA')
                             # Troca de Contexto por 4 unidades de tempo
                             count_time += 1
-
-                            # Atualiza o tempo de vida e de espera das tarefas
-                            for task in tasks_ordered:
-                                if task['ingress'] <= count_time and task['duration'] > 0:
-                                    total_wait_time += 1
-                                    total_turnaround_time += 1
                             
                             new_column = ["-" if task['ingress'] <= count_time and task['duration'] > 0 else " " for task in tasks]
                             table.add_column(str(count_time), new_column)
@@ -98,10 +81,16 @@ def round_robin():
         count_time += 1
         time.sleep(0.5)
 
+    # Calcula os tempos totais de espera e de vida (turnaround)
+    for task in tasks:
+        print(task)
+        total_turnaround_time += task['death_time'] - task['ingress']
+        total_wait_time += (task['death_time'] - task['ingress']) - task['exe_time']
+
     # Calcula os tempos médios de espera e de vida (turnaround)
     num_tasks = len(tasks)
-    avg_wait_time = math.trunc(total_wait_time / num_tasks)
-    avg_turnaround_time = math.trunc(total_turnaround_time / num_tasks)
+    avg_wait_time = total_wait_time / num_tasks
+    avg_turnaround_time = total_turnaround_time / num_tasks
     
     print('Tempo médio de vida (turnaround):', avg_turnaround_time)
     print('Tempo médio de espera:', avg_wait_time)
@@ -139,7 +128,9 @@ def main():
                 "id": (len(tasks)),
                 "ingress": ingress,
                 "duration": duration,
-                "priority": 0
+                "priority": 0,
+                "exe_time": 0,
+                "death_time": 0,
             }
             
             # Adicionar linha à tabela

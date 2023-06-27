@@ -1,0 +1,5 @@
+SELECT 	e.code, e.name,
+		m.model, m.num_serial, 
+		ie.id, ie.problem, ie.service_performed, ie.comment, ie.date_input, ie.date_exit FROM input_equipment ie
+JOIN machines m ON ie.id_machine_ie = m.id
+JOIN entities e ON ie.id_entity_ie = e.id

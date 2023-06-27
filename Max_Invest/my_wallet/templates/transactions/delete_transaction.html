@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container text-center mt-5 p-5 border">
+    <h1>Confirmar exclusão da transação</h1>
+    <br/>
+    <p>Deseja realmente excluir a transação?</p>
+    <br/>
+    <p>ID: {{ transaction.id }}</p>
+    <p>Ação: {{ transaction.stock.code }}</p>
+    <p>Data: {{ transaction.date }}</p>
+    <p>Valor: {{ transaction.value }}</p>
+    <hr/>
+
+    <div class="d-flex justify-content-center">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+            <a href="{% url 'my-wallet:transactions' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
