@@ -112,25 +112,43 @@ class TransactionDetail(APIView):
         try:
             return Transaction.objects.get(pk=pk)
         except Transaction.DoesNotExist:
-            raise Http404
+            raise Http404('Transação não existe')
 
     def get(self, request, pk):
+        user = request.user
         transaction = self.get_object(pk)
-        serializer = TransactionSerializer(transaction)
+        filtered_transaction = transaction.filter(user=user)
+        serializer = TransactionSerializer(filtered_transaction)
         return Response(serializer.data)
 
     def put(self, request, pk):
+        user = request.user
         transaction = self.get_object(pk)
-        serializer = TransactionSerializer(transaction, data=request.data)
+        filtered_transaction = transaction.filter(user=user)
+        serializer = TransactionSerializer(filtered_transaction, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."}) 
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request, pk):
+        user = request.user
+        transaction = self.get_object(pk)
+        filtered_transaction = transaction.filter(user=user)
+        serializer = TransactionSerializer(filtered_transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."})
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request, pk):
+        user = request.user
         transaction = self.get_object(pk)
-        transaction.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        filtered_transaction = transaction.filter(user=user)
+        filtered_transaction.delete()
+        return Response({'message': 'Algo deu errado.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @login_required(login_url='accounts:login')
