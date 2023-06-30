@@ -7,11 +7,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from .forms import TransactionForm, UpdateTransactionForm
 from .models import Stock, Transaction
 from .serializers import StockSerializer, TransactionSerializer, InvestorSerializer
 from accounts.models import Investor
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+from .serializers import TransactionSerializer
+from .models import Transaction
+
 
 
 class InvestorList(APIView):
@@ -26,6 +33,7 @@ class InvestorList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class InvestorDetail(APIView):
     def get_object(self, pk):
@@ -53,7 +61,6 @@ class InvestorDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class StockList(APIView):
     def get(self, request):
         stocks = Stock.objects.all()
@@ -67,6 +74,7 @@ class StockList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class StockDetail(APIView):
     def get_object(self, pk):
         try:
@@ -75,9 +83,12 @@ class StockDetail(APIView):
             raise Http404
 
     def get(self, request, pk):
-        stock = self.get_object(pk)
-        serializer = StockSerializer(stock)
+        user = request.user
+        stock = self.get_object(pk)                      
+        transaction = self.get_object(pk)                                  
+        serializer = StockSerializer(transaction)
         return Response(serializer.data)
+
 
     def put(self, request, pk):
         stock = self.get_object(pk)
@@ -93,44 +104,74 @@ class StockDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class TransactionList(APIView):
     def get(self, request):
-        transactions = Transaction.objects.all()
+        user = request.user
+        transactions = Transaction.objects.filter(user=user)
         serializer = TransactionSerializer(transactions, many=True, context={'request': request})
-        return Response(serializer.data)
+        data = {
+            'message': 'Aqui estão todas as suas transações',
+            'transactions': serializer.data
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
 
     def post(self, request):
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data,{'message': 'solicitação feita com sucesso.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, {'message': 'Erro ao fazer solicitação.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TransactionDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Transaction.objects.get(pk=pk)
-        except Transaction.DoesNotExist:
-            raise Http404
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Transaction.objects.filter(user=user)
+
+    def not_found(self):
+        self.raise_exception("Transação não encontrada.", status_code=404)
 
     def get(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = TransactionSerializer(transaction)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = TransactionSerializer(transaction, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."})
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = TransactionSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."})
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         transaction.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Transação excluída com sucesso.'}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 @login_required(login_url='accounts:login')
@@ -167,17 +208,14 @@ def transaction_details(request, pk):
 @api_view(['GET', 'POST'])
 def add_transaction(request):
     if request.method == 'GET':
-        # Lógica para lidar com solicitações GET
-        # Por exemplo, renderizar o formulário de adição de transação
         form = TransactionForm()
         return render(request, 'transactions/add_transaction.html', {'form': form})
 
     elif request.method == 'POST':
-        # Lógica para lidar com solicitações POST
         form = TransactionForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
-            transaction.user = request.user  # Associa o usuário logado à transação
+            transaction.user = request.user  
             transaction.save()
             return redirect('my-wallet:transactions')
         else:
@@ -211,3 +249,19 @@ def delete_transaction(request, pk):
     # Renderiza a página de confirmação de exclusão
     context = {'transaction': transaction}
     return render(request, 'transactions/delete_transaction.html', context)
+
+class PriceAverageAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        purchases = Transaction.objects.filter(user=user, type='C') 
+
+        total_quantity = 0  
+        total_value = 0  
+
+        for transaction in purchases:
+            total_value = (total_quantity * total_value + transaction.total_final()) / (total_quantity + transaction.amount)
+            total_quantity += transaction.amount
+
+        price_average = round(total_value, 2)  
+
+        return Response({"preço_medio": price_average})
