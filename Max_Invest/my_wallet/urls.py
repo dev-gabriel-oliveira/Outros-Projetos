@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import InvestorList, InvestorDetail, StockList, StockDetail, TransactionList, TransactionDetail
-from .views import get_transactions_by_user, get_transactions_by_month_year, add_transaction, update_transaction, transaction_details, delete_transaction
+from .views import get_transactions_by_user, get_transactions_by_month_year, stock_summary
+from .views import add_transaction, update_transaction, transaction_details, delete_transaction
 
 app_name = 'my-wallet'
 
@@ -15,6 +16,7 @@ urlpatterns = [
 
     path('transactions/', get_transactions_by_user, name='transactions'),
     path('api/transactions/<int:year>/<int:month>/', get_transactions_by_month_year, name='transactions-by-month-year'),
+    path('stocks-bought/', stock_summary, name='stocks_bought'),
     path('transactions/add/', add_transaction, name='add_transaction'),
     path('transactions/<int:pk>/update/', update_transaction, name='update_transaction'),
     path('transactions/<int:pk>/', transaction_details, name='transaction_details'),

@@ -56,7 +56,7 @@ class Transaction(models.Model):
             return round(((self.value * self.amount) - (self.brokerage + ((self.value * self.amount) * Decimal(0.0325)))), 2)
         
   
-    def preco_medio(self):
+    '''def preco_medio(self):
             cont = Transaction.objects.filter(stock=self.stock, type='C').count()  
             pm = Transaction.objects.filter(stock=self.stock, type='C').aggregate
             (Sum(round(((self.value * self.amount) + (self.brokerage + ((self.value * self.amount) * Decimal(0.0325)))), 2)))['total_final__sum']  
@@ -71,6 +71,6 @@ class Transaction(models.Model):
                 pm = pm / cont if cont != 0 else 0
 
                 return round(round(((self.value * self.amount) - (self.brokerage + ((self.value * self.amount) * Decimal(0.0325)))), 2) - (self.amount * round(pm, 2)), 2)
-
+'''
     class Meta:
         ordering = ['date']

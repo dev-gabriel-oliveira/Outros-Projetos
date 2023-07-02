@@ -6,17 +6,22 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
+
+from django.db.models import Count, Sum, F, DecimalField
+from django.db.models.functions import Cast, Round
 from datetime import datetime
+from decimal import Decimal
 
 from .forms import TransactionForm, UpdateTransactionForm
 from .models import Stock, Transaction
-from .serializers import StockSerializer, TransactionSerializer, InvestorSerializer
+from .serializers import StockSerializer, TransactionSerializer, InvestorSerializer, StockSummarySerializer
 from accounts.models import Investor
 
 
 class InvestorList(APIView):
     def get(self, request):
-        investors = Investor.objects.all()
+        user = request.user
+        investors = Investor.objects.filter(user=user).all()
         serializer = InvestorSerializer(investors, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -28,9 +33,10 @@ class InvestorList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class InvestorDetail(APIView):
-    def get_object(self, pk):
+    def get_object(self, request, pk):
         try:
-            return Investor.objects.get(pk=pk)
+            user = request.user
+            return Investor.objects.filter(user=user).get(pk=pk)
         except Investor.DoesNotExist:
             raise Http404
 
@@ -56,7 +62,8 @@ class InvestorDetail(APIView):
 
 class StockList(APIView):
     def get(self, request):
-        stocks = Stock.objects.all()
+        user = request.user
+        stocks = Stock.objects.filter(user=user).all()
         serializer = StockSerializer(stocks, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -68,9 +75,10 @@ class StockList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class StockDetail(APIView):
-    def get_object(self, pk):
+    def get_object(self, request, pk):
         try:
-            return Stock.objects.get(pk=pk)
+            user = request.user
+            return Stock.objects.filter(user=user).get(pk=pk)
         except Stock.DoesNotExist:
             raise Http404
 
@@ -96,7 +104,8 @@ class StockDetail(APIView):
 
 class TransactionList(APIView):
     def get(self, request):
-        transactions = Transaction.objects.all()
+        user = request.user
+        transactions = Transaction.objects.filter(user=user).all()
         serializer = TransactionSerializer(transactions, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -108,9 +117,10 @@ class TransactionList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TransactionDetail(APIView):
-    def get_object(self, pk):
+    def get_object(self, request, pk):
         try:
-            return Transaction.objects.get(pk=pk)
+            user = request.user
+            return Transaction.objects.filter(user=user).get(pk=pk)
         except Transaction.DoesNotExist:
             raise Http404
 
@@ -156,6 +166,24 @@ def get_transactions_by_month_year(request, month, year):
         return Response(serializer.data)
     except ValueError:
         return Response({'message': 'Invalid month or year format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@login_required(login_url='accounts:login')
+@api_view(['GET'])
+def stock_summary(request):
+    user = request.user
+    tax_b3 = Decimal(0.0325)
+    stock_summary = Transaction.objects.filter(user=user, type='C').values('stock', 'stock__code', 'stock__name').annotate(
+        total_transactions=Count('id'),
+        total_quantity=Sum('amount'),
+        total_final=Round(Cast(Sum((F('value') * F('amount')) + F('brokerage') + (F('value') * F('amount') * 0.0325)), output_field=DecimalField(decimal_places=2))),
+        preco_medio=Round(Cast(Sum((F('value') * F('amount')) + F('brokerage') + (F('value') * F('amount') * 0.0325)) / (Sum('amount') * Count('id')), output_field=DecimalField(decimal_places=2)))
+    )
+
+    serializer = StockSummarySerializer(stock_summary, many=True)
+    context = {'stock_summary': serializer.data}
+    #return Response(serializer.data)
+    return render(request, 'transactions/stock_summary.html', context)
+
 
 @login_required(login_url='accounts:login')
 def transaction_details(request, pk):

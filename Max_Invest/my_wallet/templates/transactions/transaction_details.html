@@ -16,7 +16,11 @@
                 <td>{{ transaction.stock.code }}</td>
             </tr>
             <tr>
-                <th>Date</th>
+                <th>Nome</th>
+                <td>{{ transaction.stock.name}}</td>
+            </tr>
+            <tr>
+                <th>Data</th>
                 <td>{{ transaction.date }}</td>
             </tr>
             <tr>
@@ -52,15 +56,6 @@
             <tr>
                 <th>Total Final</th>
                 <td>R$ {{ transaction.total_final }}</td>
-            </tr>
-            
-            <tr>
-                <th>Preço Médio</th>
-                <td>R$ {{ transaction.preco_medio }}</td>
-            </tr>
-            <tr>
-                <th>Lucro/Prejuízo</th>
-                <td>R$ {{ transaction.lucro_prejuizo }}</td>
             </tr>
         </table>
     </div>

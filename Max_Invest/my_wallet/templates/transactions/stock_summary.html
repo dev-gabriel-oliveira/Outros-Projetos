@@ -31,42 +31,34 @@
     </div>
 </nav>
 
-
     <div class="d-flex justify-content-evenly align-items-center mt-5">
-        <h1>Minhas Transações</h1>
-        <a href="{% url 'my-wallet:add_transaction' %}" class="btn btn-primary">Adicionar Transação</a>
+        <h1>Ações Compradas</h1>
     </div>
-    
+
     <div class="d-flex justify-content-center">
         <table class="table table-bordered m-5">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Data</th>
-                    <th>Valor</th>
-                    <th>- - - - -</th>
-                    <th>- - - - -</th>
-                    <th>- - - - -</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for transaction in transactions %}
-                <tr>
-                    <td>{{ transaction.stock_code }}</td>
-                    <td>{{ transaction.date }}</td>
-                    <td>{{ transaction.value }}</td>
-                    <td>
-                        <a href="{% url 'my-wallet:transaction_details' transaction.id %}" class="btn btn-info">Detalhes</a>
-                    </td>
-                    <td>
-                        <a href="{% url 'my-wallet:update_transaction' transaction.id %}" class="btn btn-primary">Atualizar</a>
-                    </td>
-                    <td>
-                        <a href="{% url 'my-wallet:delete_transaction' transaction.id %}" class="btn btn-danger">Deletar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Total Transações</th>
+            <th>Total Quantidade</th>
+            <th>Total Final</th>
+            <th>Preço Médio</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for summary in stock_summary %}
+            <tr>
+            <td>{{ summary.code }}</td>
+            <td>{{ summary.name }}</td>
+            <td>{{ summary.total_transactions }}</td>
+            <td>{{ summary.total_quantity }}</td>
+            <td>{{ summary.total_final }}</td>
+            <td>{{ summary.preco_medio }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     </div>
 {% endblock %}
