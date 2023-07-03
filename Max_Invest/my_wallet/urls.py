@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import InvestorList, InvestorDetail, StockList, StockDetail, TransactionList, TransactionDetail
+from .views import InvestorList, InvestorDetail, StockList, StockDetail, TransactionList, TransactionDetail, PriceAverageAPIView
 from .views import get_transactions_by_user, get_transactions_by_month_year, stock_summary
 from .views import add_transaction, update_transaction, transaction_details, delete_transaction
 
@@ -21,4 +21,5 @@ urlpatterns = [
     path('transactions/<int:pk>/update/', update_transaction, name='update_transaction'),
     path('transactions/<int:pk>/', transaction_details, name='transaction_details'),
     path('transactions/<int:pk>/delete', delete_transaction, name='delete_transaction'),
+    path('api/price-average/', PriceAverageAPIView.as_view(), name='price_average'),
 ]
