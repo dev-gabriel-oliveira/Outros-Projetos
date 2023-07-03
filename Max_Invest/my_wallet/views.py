@@ -58,8 +58,6 @@ class InvestorDetail(APIView):
         investor.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
 class StockList(APIView):
     def get(self, request):
         user = request.user
@@ -103,44 +101,71 @@ class StockDetail(APIView):
 
 
 class TransactionList(APIView):
-    def get(self, request):
+   def get(self, request):
         user = request.user
-        transactions = Transaction.objects.filter(user=user).all()
+        transactions = Transaction.objects.filter(user=user)
         serializer = TransactionSerializer(transactions, many=True, context={'request': request})
-        return Response(serializer.data)
+        data = {
+            'message': 'Aqui estão todas as suas transações',
+            'transactions': serializer.data
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request):
+
+   def post(self, request):
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data,{'message': 'solicitação feita com sucesso.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, {'message': 'Erro ao fazer solicitação.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class TransactionDetail(APIView):
-    def get_object(self, request, pk):
-        try:
-            user = request.user
-            return Transaction.objects.filter(user=user).get(pk=pk)
-        except Transaction.DoesNotExist:
-            raise Http404
+    serializer_class = TransactionSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Transaction.objects.filter(user=user)
+
+    def not_found(self):
+        self.raise_exception("Transação não encontrada.", status_code=404)
 
     def get(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = TransactionSerializer(transaction)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = TransactionSerializer(transaction, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."})
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request, pk):
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = TransactionSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"data": serializer.data, "message": "Dados Atualizados com Sucesso."})
+        return Response({"data": serializer.errors, "message": "Algo deu errado."}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        transaction = self.get_object(pk)
+        queryset = self.get_queryset()
+        transaction = get_object_or_404(queryset, pk=pk)
+        if transaction.user != request.user:
+            return Response({'message': 'Não autorizado.'}, status=status.HTTP_401_UNAUTHORIZED)
         transaction.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Transação excluída com sucesso.'}, status=status.HTTP_204_NO_CONTENT)
 
 
 @login_required(login_url='accounts:login')
@@ -178,10 +203,10 @@ def stock_summary(request):
         total_final=Round(Cast(Sum((F('value') * F('amount')) + F('brokerage') + (F('value') * F('amount') * 0.0325)), output_field=DecimalField(decimal_places=2))),
         preco_medio=Round(Cast(Sum((F('value') * F('amount')) + F('brokerage') + (F('value') * F('amount') * 0.0325)) / (Sum('amount') * Count('id')), output_field=DecimalField(decimal_places=2)))
     )
-
+    
     serializer = StockSummarySerializer(stock_summary, many=True)
     context = {'stock_summary': serializer.data}
-    #return Response(serializer.data)
+    # return Response(serializer.data)
     return render(request, 'transactions/stock_summary.html', context)
 
 
@@ -239,3 +264,19 @@ def delete_transaction(request, pk):
     # Renderiza a página de confirmação de exclusão
     context = {'transaction': transaction}
     return render(request, 'transactions/delete_transaction.html', context)
+
+class PriceAverageAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        purchases = Transaction.objects.filter(user=user, type='C') 
+
+        total_quantity = 0  
+        total_value = 0  
+
+        for transaction in purchases:
+            total_value = (total_quantity * total_value + transaction.total_final()) / (total_quantity + transaction.amount)
+            total_quantity += transaction.amount
+
+        price_average = round(total_value, 2)  
+
+        return Response({"preço_medio": price_average})
