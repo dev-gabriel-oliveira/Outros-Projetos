@@ -1,0 +1,35 @@
+#root {
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+main{
+  display: grid;
+  grid-template-columns: auto 6rem auto;
+}
+
+main ul, main form{
+  padding: 2rem;
+  border: 1px solid gray;
+  border-radius: 1rem;
+}
+
+ul,li,p{
+  color: white;
+}
+
+li p, li a{
+  margin: 0 1rem;
+}
+
+ul{
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+li{
+  display: grid;
+  grid-template-columns: 30% 20% 30% 20%;
+}
