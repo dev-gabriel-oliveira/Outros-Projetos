@@ -1,31 +1,31 @@
-import { useRef } from 'react'
+import { useRef, FormEvent } from 'react'
 
 interface BookFormProps{
     onAddBook: any
 }
 
 export function BookForm({onAddBook}: BookFormProps) {
-    const title = useRef(null);
-    const author = useRef(null);
-    const amazonLink = useRef(null);
+    const title = useRef<HTMLInputElement | null>(null);
+    const author = useRef<HTMLInputElement | null>(null);
+    const amazonLink = useRef<HTMLInputElement | null>(null);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
-        if (!title.current.value || !author.current.value || !amazonLink.current.value) {
+        if (!title.current?.value || !author.current?.value || !amazonLink.current?.value) {
             alert('Todos os campos devem ser preenchidos!');
             return
         }
         
-        if (window.confirm(`Confirma a adição de '${title.current.value}'?`)) {
-            const bookTitle = title.current.value;
-            const bookAuthor = author.current.value;
-            const bookAmazonLink = amazonLink.current.value;
+        if (window.confirm(`Confirma a adição de '${title.current!.value}'?`)) {
+            const bookTitle = title.current!.value;
+            const bookAuthor = author.current!.value;
+            const bookAmazonLink = amazonLink.current!.value;
             onAddBook(bookTitle, bookAuthor, bookAmazonLink);
 
-            title.current.value = '';
-            author.current.value = '';
-            amazonLink.current.value = '';
+            title.current!.value = '';
+            author.current!.value = '';
+            amazonLink.current!.value = '';
         }
     };
 

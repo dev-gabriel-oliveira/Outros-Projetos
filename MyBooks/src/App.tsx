@@ -4,7 +4,7 @@ import { BookForm } from './components/BookForm'
 import BooksList from './components/BookList';
 
 export default function App() {
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState<{ title: string; author: string; amazonLink: string; }[]>([]);
 
   const handleAddBook = (bookTitle: string, bookAuthor: string, bookAmazonLink: string) => {
     const newBook = {
@@ -12,7 +12,6 @@ export default function App() {
       author: bookAuthor,
       amazonLink: bookAmazonLink
     }
-
     setBooks([...books, newBook]);
   };
 
