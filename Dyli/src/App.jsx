@@ -1,31 +1,27 @@
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import jwt_decode from "jwt-decode";
-import './App.css';
 import { useState } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './contexts/auth';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-function App() {
-  const [user, setUser] = useState(null)
+import './App.css';
+
+import Header from './components/header/index';
+import AppRoutes from './routes/routes';
+import Footer from './components/footer';
+
+
+export default function App() {
   return (
-    <GoogleOAuthProvider clientId="806327805056-qgm85redbtegq9opghg3lrtumhsqs4f0.apps.googleusercontent.com">
-      {user && (
-        <>
-        <h1>Bem vindo, {user?.name}!</h1>
-        <p>{user?.email}</p>
-        <img src={user?.picture} alt="" srcset="" />
-        </>
-      )}
-      <GoogleLogin
-        onSuccess={credentialResponse => {
-          let decoded = jwt_decode(credentialResponse.credential)
-          setUser(decoded)
-          console.log(decoded);
-        }}
-        onError={() => {
-          console.log('Login Failed');
-        }}
-      />
-    </GoogleOAuthProvider>
+    <AuthProvider>
+      <GoogleOAuthProvider clientId="806327805056-qgm85redbtegq9opghg3lrtumhsqs4f0.apps.googleusercontent.com">
+        <BrowserRouter>
+
+          <Header />
+          <AppRoutes />
+          <Footer />
+
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </AuthProvider>
   )
 }
-
-export default App

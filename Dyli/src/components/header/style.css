@@ -1,0 +1,16 @@
+.navbar a{
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+    transition: 0.25s;
+}
+.navbar a:hover{
+    color: dodgerblue;
+}
+.navbar-brand img{
+    filter: saturate(90%);
+    transition: 0.25s;
+}
+.navbar-brand img:hover{
+    filter: saturate(120%) contrast(120%);
+}
