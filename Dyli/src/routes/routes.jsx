@@ -11,7 +11,6 @@ import PostForm from '../pages/PostForm/index.jsx';
 const Private = ({ Logged }) => {
     const { signed } = useAuth();
     const location = useLocation().pathname;
-    if (location === "/") console.log(location);
 
     if (signed) {
         if (location === "/") {
