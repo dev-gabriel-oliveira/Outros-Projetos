@@ -17,8 +17,6 @@ export default function PostsList() {
         query.forEach((doc) => {
             postsArray.push({id: doc.id, ...doc.data()})
         });
-
-        console.log(postsArray);
         setPosts(postsArray);
     };
 
