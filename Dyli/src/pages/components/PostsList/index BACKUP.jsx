@@ -1,24 +1,21 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useState } from 'react';
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../contexts/firebase';
 
 import PostItem from '../PostItem';
-import postsListReducer from './postsListReducer';
 
 export default function PostsList() {
-    const [state, dispatch] = useReducer(postsListReducer, {posts: []});
+    const [ posts, setPosts ] = useState([]);
 
     async function getAllPosts(){
         const postsArray = [];
+        const query = await getDocs(collection(db, "post"));
 
-        const q = query(collection(db, "post"), where("likes", ">=", 0));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
+        query.forEach((doc) => {
             postsArray.push({id: doc.id, ...doc.data()})
         });
-        
-        dispatch({ type: 'SET_POSTS', payload: postsArray });
+        setPosts(postsArray);
     };
 
     useEffect(() => {
@@ -26,10 +23,10 @@ export default function PostsList() {
     },[]);
 
     return (
-        <div className='d-flex flex-wrap justify-content-center'>
-            {state.posts.length > 0 ? (
+        <div className='d-flex flex-wrap justify-content-evenly'>
+            {posts.length > 0 && (
                 <>
-                {state.posts.map((post, id) => (
+                {posts.map((post, id) => (
                     <PostItem
                         key={id}
                         id={post.id}
@@ -42,11 +39,6 @@ export default function PostsList() {
                     />
                 ))}
                 </>
-            ) : (
-                <div className="card card-body">
-                    <h4>Não há posts ainda.</h4>
-                    <strong>Comece a postar e compartilhe.</strong>
-                </div>
             )}
         </div>
     )

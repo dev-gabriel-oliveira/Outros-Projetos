@@ -7,13 +7,13 @@ export default function Feed() {
 
     return (
         <>
-            <div className="d-flex justify-content-between mx-5">
+            <div className="d-flex justify-content-between">
                 <h1>Feed</h1>
                 <button
                     className='btn btn-primary'
                     onClick={() => {navigate('/form')}}
                 >
-                    <strong>Criar Postagem</strong>
+                    <strong>Criar</strong>
                 </button>
             </div>
 

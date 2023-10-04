@@ -1,3 +1,8 @@
+html, body, #root, main{
+  height: 100%;
+  width: 100%;
+}
+
 #root {
   margin: auto;
   text-align: center;
@@ -7,6 +12,33 @@ main {
   padding: 5rem;
 }
 
+.navbar-brand img{
+  width: 3rem;
+}
+
 a {
   text-decoration: none;
+}
+
+@media (max-width:480px) {
+  html, body, #root, main{
+    font-size: 3.5vw;
+  }
+}
+@media (max-width:600px) {
+  /* portrait tablets, portrait iPad, e-readers (Nook/Kindle), landscape 800x480 phones (Android) */
+  main{
+    padding: 4rem 1.5rem;
+  }
+}
+@media (max-width:991px) {
+  nav .container-fluid{
+    padding: 0;
+  }
+  nav a.navbar-brand, nav button.navbar-toggler{
+    margin: 0 2vw;
+  }
+  nav li.nav-item{
+    border-top: 1px solid #444;
+  }
 }

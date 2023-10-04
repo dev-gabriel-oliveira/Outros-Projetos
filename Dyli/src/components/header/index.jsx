@@ -11,7 +11,7 @@ export default function Header() {
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark p-0">
             <div className="container-fluid">
                 <Link className="navbar-brand" to="/">
-                    <img src='/icon.png' alt="" width={'45rem'} />
+                    <img src='/icon.png' alt="" />
                 </Link>
 
                 {signed && (

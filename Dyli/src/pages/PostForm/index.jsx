@@ -11,22 +11,28 @@ export default function PostForm() {
     const textInput = useRef();
 
     async function handleSubmit() {
-        const timestampNow = Date.now();
-        const currentTimestamp = new Date(timestampNow);
-        await addDoc(collection(db, "post"), {
-            text: textInput.current.value,
-            user_email: user.email,
-            likes: 0,
-            dislikes: 0,
-            date_creation: currentTimestamp,
-        });
-        navigate("/feed");
-        alert("Post adicionado com sucesso!");
+        if (textInput.current.value) {
+            await addDoc(collection(db, "post"), {
+                text: textInput.current.value,
+                user_email: user.email,
+                likes: 0,
+                dislikes: 0,
+                date_creation: new Date,
+            });
+            navigate("/feed");
+            return alert("Post adicionado com sucesso!");
+        }
+        
+        return alert("Escreva algo para postar!");
     }
 
     return (
         <>
-            <h1>Formulário</h1>
+            <h4 className='text-start fst-italic'>
+                Escrever é dar asas ao pensar.
+                <br />
+                Mas, pense bem antes de escrever.
+            </h4>
 
             <hr />
 
