@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from 'react';
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../../../contexts/firebase';
 
 import PostItem from '../PostItem';
@@ -12,7 +12,7 @@ export default function PostsList() {
     async function getAllPosts(){
         const postsArray = [];
 
-        const q = query(collection(db, "post"), where("likes", ">=", 0));
+        const q = query(collection(db, "post"), orderBy("date_creation", "desc"));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             postsArray.push({id: doc.id, ...doc.data()})
