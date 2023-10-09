@@ -100,7 +100,7 @@ export default function PostItem({id, text, user_email, likes, dislikes, date_cr
 
     return (
         <>
-            <div className="card card-body d-inline-block my-3">
+            <div className="card card-body d-inline-block m-3">
                 <div className='d-grid text-start mb-1'>
                     <h5 className='fst-italic mb-2'>{text}</h5>
 

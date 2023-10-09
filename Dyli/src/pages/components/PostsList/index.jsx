@@ -1,14 +1,17 @@
 import { useEffect, useReducer } from 'react';
+import { useAuth } from '../../../contexts/useAuth';
 
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../../../contexts/firebase';
 
 import PostItem from '../PostItem';
 import postsListReducer from './postsListReducer';
 
-export default function PostsList() {
+export default function PostsList({onlyFromCurrentUser}) {
+    const { user } = useAuth();
     const [state, dispatch] = useReducer(postsListReducer, {posts: []});
 
+    // Busca os Posts de todos os users
     async function getAllPosts(){
         const postsArray = [];
 
@@ -21,8 +24,25 @@ export default function PostsList() {
         dispatch({ type: 'SET_POSTS', payload: postsArray });
     };
 
+    // Busca Posts do current user
+    async function getPostsFromCurrentUser(){
+        const postsArray = [];
+
+        const q = query(collection(db, "post"), where("user_email", "==", user.email));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            postsArray.push({id: doc.id, ...doc.data()})
+        });
+        
+        dispatch({ type: 'SET_POSTS', payload: postsArray });
+    };
+
     useEffect(() => {
-        getAllPosts()
+        if (onlyFromCurrentUser === true) {
+            getPostsFromCurrentUser();
+            return;
+        }
+        getAllPosts();
     },[]);
 
     return (

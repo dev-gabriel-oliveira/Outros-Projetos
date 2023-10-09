@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { googleLogout } from '@react-oauth/google';
 import { useAuth } from '../../contexts/useAuth';
 import { useNavigate } from 'react-router-dom';
+
+import { googleLogout } from '@react-oauth/google';
+import PostsList from '../components/PostsList';
 
 
 export default function Profile() {
@@ -25,6 +27,12 @@ export default function Profile() {
             <img src={user?.picture} alt="" />
             <h1>{user?.username}</h1>
             <p>{user?.email}</p>
+
+            <hr />
+
+            <PostsList onlyFromCurrentUser={true}/>
+
+            <hr />
 
             <button
                 className='btn btn-danger'

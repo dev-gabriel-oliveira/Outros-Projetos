@@ -19,7 +19,7 @@ export default function Feed() {
 
             <hr />
 
-            <PostsList />
+            <PostsList onlyFromCurrentUser={false} />
 
             <hr />
         </>

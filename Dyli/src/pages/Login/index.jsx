@@ -27,8 +27,6 @@ export default function Login() {
 
           // Redireciona para a página de Posts
           navigate('/feed');
-          
-          alert('Login Bem-Sucedido!');
         }}
         onError={() => {
           alert('Login Malsucedido!');
