@@ -1,0 +1,32 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "Livro 1",
+      "author": "Autor 1",
+      "amazonLink": "https://www.amazon.com/livro1",
+      "isRead": true
+    },
+    {
+      "id": 2,
+      "title": "Livro 2",
+      "author": "Autor 2",
+      "amazonLink": "https://www.amazon.com/livro2",
+      "isRead": false
+    },
+    {
+      "id": 3,
+      "title": "Livro 3",
+      "author": "Autor 3",
+      "amazonLink": "https://www.amazon.com/livro3",
+      "isRead": false
+    },
+    {
+      "title": "Verity",
+      "author": "Colleen Hoover",
+      "amazonLink": "nao sei",
+      "isRead": true,
+      "id": 4
+    }
+  ]
+}

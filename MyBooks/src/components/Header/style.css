@@ -1,0 +1,28 @@
+nav{
+    display: flex;
+    padding: 1rem;
+    background-color: black;
+
+    & ul{
+        display: flex;
+        justify-content: space-around;
+        list-style: none;
+        padding: 0;
+        margin: auto;
+
+        & li{
+            margin: 0 2rem;
+
+            & a{
+                padding: 1rem;
+
+                &:hover{
+                    background-color: #222222;
+                }
+                &.active{
+                    border-bottom: 0.1rem solid #646cff;
+                }
+            }
+        }
+    }
+}

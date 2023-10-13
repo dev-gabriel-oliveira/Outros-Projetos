@@ -1,20 +1,26 @@
-#root {
-  margin: 0 auto;
-  padding: 2rem;
+#root{
   text-align: center;
 }
 
 main{
-  display: grid;
-  grid-template-columns: auto 6rem auto;
-}
-
-main form, main section{
-  padding: 2rem;
-  border: 1px solid gray;
-  border-radius: 1rem;
+  padding: 10%;
 }
 
 p, td, th{
   color: white;
+}
+
+form{
+  display: grid;
+  padding: 5% 20%;
+
+  & label{
+    display: flex;
+  }
+}
+
+footer{
+  background-color: black;
+  color: gray;
+  padding: 2rem;
 }
